@@ -7,6 +7,7 @@ class Config:
     SKYSCANNER_API_KEY = os.getenv('SKYSCANNER_API_KEY')
     TO_EMAILS = os.getenv('TO_EMAILS').split(',')
     PRICE_LIMIT = 500
+    AWS_REGION = os.getenv('AWS_REGION')
     SEARCH_URL_TEMPLATE = 'https://partners.api.skyscanner.net/apiservices/browsequotes/v1.0/US/USD/en-US/{origin}/{destination}/{date}?apiKey={api_key}'
 
     @staticmethod
