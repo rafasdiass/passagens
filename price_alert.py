@@ -4,6 +4,7 @@ from config import Config
 import random
 import logging
 from time import sleep
+from concurrent.futures import ThreadPoolExecutor
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
@@ -21,7 +22,6 @@ class PriceAlert:
     def check_prices(self):
         try:
             prices_start, prices_end = self.price_fetcher.fetch_prices(self.origin, self.destination, self.start_date, self.end_date)
-            
             for prices in [prices_start, prices_end]:
                 for quote in prices['Quotes']:
                     if quote['MinPrice'] <= Config.PRICE_LIMIT:
@@ -42,10 +42,17 @@ def lambda_handler(event, context):
         {"origin": "FOR", "destination": "GRU", "start_date": "2024-09-01", "end_date": "2024-09-15"}
     ]
 
-    for trip in destinations:
-        alert = PriceAlert(trip["origin"], trip["destination"], trip["start_date"], trip["end_date"])
-        alert.check_prices()
-        sleep_randomly()
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = []
+        for trip in destinations:
+            alert = PriceAlert(trip["origin"], trip["destination"], trip["start_date"], trip["end_date"])
+            futures.append(executor.submit(alert.check_prices))
+
+        for future in futures:
+            try:
+                future.result()
+            except Exception as e:
+                logger.error(f"Erro ao executar o alerta de preço: {e}")
 
 if __name__ == '__main__':
     lambda_handler(None, None)
