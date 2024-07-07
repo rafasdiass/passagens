@@ -37,22 +37,9 @@ def sleep_randomly(min_seconds=3600, max_seconds=10800):
     sleep(sleep_time)
 
 def lambda_handler(event, context):
-    destinations = [
-        {"origin": "FOR", "destination": "IGU", "start_date": "2024-09-01", "end_date": "2024-09-15"},
-        {"origin": "FOR", "destination": "GRU", "start_date": "2024-09-01", "end_date": "2024-09-15"}
-    ]
-
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        futures = []
-        for trip in destinations:
-            alert = PriceAlert(trip["origin"], trip["destination"], trip["start_date"], trip["end_date"])
-            futures.append(executor.submit(alert.check_prices))
-
-        for future in futures:
-            try:
-                future.result()
-            except Exception as e:
-                logger.error(f"Erro ao executar o alerta de preço: {e}")
+    alert = PriceAlert(Config.ORIGIN, Config.DESTINATION, Config.START_DATE, Config.END_DATE)
+    alert.check_prices()
+    sleep_randomly()
 
 if __name__ == '__main__':
     lambda_handler(None, None)

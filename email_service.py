@@ -14,12 +14,14 @@ class EmailService:
     def send_email(self, price, destination):
         try:
             response = self.ses_client.send_email(
-                Source='your_verified_email@example.com',
+                Source=Config.SES_VERIFIED_EMAIL,
                 Destination={'ToAddresses': Config.TO_EMAILS},
                 Message={
                     'Subject': {'Data': f'Alerta de Preço de Passagem Aérea para {destination}'},
-                    'Body': {'Text': {'Data': f'Preço encontrado: ${price}'}}
-                }
+                    'Body': {
+                        'Text': {'Data': f'Preço encontrado: ${price}'},
+                    },
+                },
             )
             logger.info(f'Email enviado com sucesso: {response}')
         except Exception as e:
